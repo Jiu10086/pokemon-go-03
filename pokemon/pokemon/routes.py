@@ -1,6 +1,10 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
+from sqlalchemy import select
+from sqlalchemy.exc import DataError
+
 from pokemon.extension import db
 from pokemon.models import Pokemon, User,Type
+from pokemon.pokemon_types import ensure_pokemon_types
 from flask_login import current_user, login_required
 
 
@@ -15,7 +19,8 @@ def index():
 @pokemon_bp.route('/new', methods=['GET', 'POST'])
 @login_required
 def new_pokemon():
-    pokemon_types = db.session.scalars(db.select(Type)).all()
+    ensure_pokemon_types(db.session)
+    pokemon_types = db.session.scalars(select(Type)).all()
     if request.method == 'POST':
         name = request.form.get('name')
         height = request.form.get('height')
@@ -39,7 +44,12 @@ def new_pokemon():
             types=p_type
         )
         db.session.add(pokemon)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except DataError:
+            db.session.rollback()
+            flash('Height or Weight is too long for the current database schema.', 'danger')
+            return render_template('pokemon/new_pokemon.html', title='New Pokemon Page', pokemon_types=pokemon_types)
         flash(f'New Pokemon {name} has been added', 'success')
         return redirect(url_for('pokemon.index'))
     

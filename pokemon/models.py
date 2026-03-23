@@ -45,8 +45,8 @@ class Pokemon(db.Model):
   __tablename__ = 'pokemon'
   id: Mapped[int] = mapped_column(Integer, primary_key=True)
   name: Mapped[str] = mapped_column(String(30), unique=True, nullable=False)
-  height: Mapped[str] = mapped_column(String(15), nullable=False)
-  weight: Mapped[str] = mapped_column(String(15), nullable=False)
+  height: Mapped[str] = mapped_column(String(50), nullable=False)
+  weight: Mapped[str] = mapped_column(String(50), nullable=False)
   description: Mapped[str] = mapped_column(Text, nullable=False)
   img_url: Mapped[str] = mapped_column(String(255), nullable=False)
   user_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'), nullable=False)

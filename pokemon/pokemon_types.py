@@ -1,4 +1,9 @@
-types = [
+from sqlalchemy import select
+
+from pokemon.models import Type
+
+
+DEFAULT_TYPES = [
   'Fire',
   'Water',
   'Bug',
@@ -18,5 +23,12 @@ types = [
   'Psychic',
   'Flying'
 ]
-from pokemon.models import Type
-pokemon_types = [Type(name=pt) for pt in types]
+
+
+def ensure_pokemon_types(session):
+  existing_names = set(session.scalars(select(Type.name)).all())
+  missing_types = [Type(name=pt) for pt in DEFAULT_TYPES if pt not in existing_names]
+
+  if missing_types:
+    session.add_all(missing_types)
+    session.commit()
